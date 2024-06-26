@@ -91,7 +91,7 @@ Pyrebase4==4.7.1
 python-dateutil==2.9.0.post0
 python-jwt==4.1.0
 pytz==2024.1
-pywin32==306
+pywin32==306; platform_system == "Windows"
 pyzmq==26.0.3
 referencing==0.35.1
 requests==2.29.0
