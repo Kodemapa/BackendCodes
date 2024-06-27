@@ -126,7 +126,8 @@ from flask_cors import CORS
 import logging
 
 app = Flask(__name__)
-CORS(app) 
+CORS(app)
+
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -164,17 +165,31 @@ def read_from_thingspeak(api_key, channel_id, field_number):
         return response.text.strip()
     return None
 
+# Use a static key for demonstration purposes (in a real application, use a secure method to store and retrieve keys)
 encryption_key = get_random_bytes(32)
+
+@app.route('/')
+def home():
+    return "Welcome to the Flask App"
+
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
 
 @app.route('/encrypt', methods=['POST'])
 def encrypt_and_send():
     try:
         sensor_data = request.get_json()
+        if not sensor_data:
+            logging.error("No JSON data received.")
+            return jsonify({"message": "No JSON data received."}), 400
+        
         logging.debug(f"Received sensor data: {sensor_data}")
         data_json = json.dumps(sensor_data)
         encrypted_data = encrypt_data(data_json, encryption_key)
         data_hash = calculate_hash(encrypted_data)
         write_api_key = "SEUBKKLNI8GQ8OMR"
+
         if write_to_thingspeak(encrypted_data, data_hash, write_api_key):
             return jsonify({"message": "Data written to ThingSpeak successfully."})
         else:
@@ -235,5 +250,4 @@ def perform_integrity_check():
         return jsonify({"message": f"An error occurred: {str(e)}"}), 500
 
 if __name__ == '__main__':
-    # Run the Flask application
     app.run(host='0.0.0.0', port=5000)
